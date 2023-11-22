@@ -4,6 +4,7 @@ export const SMessage = {
   Logined: "Login Success",
   GetOne: "GetOne Success",
   GetAll: "GetAll Success",
+  Update: "Update Success",
 };
 export const EMessage = {
   // error message

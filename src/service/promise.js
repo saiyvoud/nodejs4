@@ -7,14 +7,17 @@ import {
 } from "../config/globalkey.js";
 import Models from "../model/index.js";
 
-export const VerifyToken = async (token) => {
+export const VerifyToken = (token) => {
   return new Promise(async (resovle, reject) => {
     try {
-      jwt.verify(token, SCREATE_KEY.toString(), async function (err, result) {
+     
+      jwt.verify(token, SCREATE_KEY, async function (err, result) {
         if (err) reject(`err${err}`);
-
+       
+        if(!result.id){
+          reject("Error Verify token");
+        }
         const decriptToken = await DeCrypt(result.id);
-
         if (!decriptToken) {
           reject("Error Decript");
         }
@@ -24,7 +27,7 @@ export const VerifyToken = async (token) => {
       });
     } catch (error) {
       console.log(error);
-      reject(error);
+      resovle(error);
     }
   });
 };
@@ -32,7 +35,7 @@ export const DeCrypts = async (data) => {
   return new Promise(async (resovle, reject) => {
     try {
       const encrypt = cryptoJS.AES.decrypt(data, SCREATE_KEY).toString();
-     // let decriptPass = encrypt.toString(cryptoJS.enc.Utf8);
+      // let decriptPass = encrypt.toString(cryptoJS.enc.Utf8);
       resovle(encrypt);
     } catch (error) {
       reject(error);
@@ -60,6 +63,7 @@ export const EnCrypts = async (data) => {
     }
   });
 };
+
 export const jwts = async (data) => {
   return new Promise(async (resovle, reject) => {
     try {
@@ -103,16 +107,16 @@ export const GenerateToken = (data) => {
       ).toString();
 
       let encryptId = await EnCrypts(JSON.stringify(data));
-      console.log(encryptId);
+
       const payload = {
         id: encryptId,
-        role: encryptRole,
+        type: encryptRole,
       };
 
       let encryptRefresh = await EnCrypts(payload.id);
       const payload_refresh = {
         id: encryptRefresh,
-        role: encryptRole,
+        type: encryptRole,
       };
       const jwt_timeout = {
         expiresIn: parseInt(JWT_TIME_OUT),

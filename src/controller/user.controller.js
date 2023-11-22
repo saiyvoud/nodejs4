@@ -12,14 +12,55 @@ import {
 import { EMessage, SMessage } from "../service/message.js";
 import { GenerateToken } from "../service/promise.js";
 import mongoose from "mongoose";
+
+import UploadImageToCloud from "../config/cloudinary.js";
 export default class UserController {
+
+  static async updateProfile(req, res) {
+    try {
+      const user_id = req.user;
+      if (!mongoose.Types.ObjectId.isValid(user_id)) {
+        return SendError404(res, EMessage.NotFound + " user_id");
+      }
+      const { username, phone } = req.body;
+      const validate = ValidateData({ username, phone });
+      if (validate.length > 0) {
+        return SendError400(res, EMessage.PleaseInput + validate.join(","));
+      }
+      const profile = req.files.profile;
+      if (!profile) {
+        return SendError400(res, "Profile is required!");
+      }
+      
+      const image_url = await UploadImageToCloud(profile.data,profile.name)
+      if(!image_url){
+        return SendError404(res,"Faild Upload Image")
+      }
+     // const image_url = await UploadImageToServer(profile.name, profile.data);
+      const user = await Models.User.findByIdAndUpdate(
+        user_id,
+        {
+          username,
+          phone,
+          profile: image_url,
+        },
+        { new: true }
+      );
+      return SendSuccess(res, SMessage.Update, user);
+    } catch (error) {
+      console.log(error);
+      return SendError500(res, EMessage.FaildServer, error);
+    }
+  }
   static async getOne(req, res) {
     try {
       const user_id = req.params.user_id;
       if (!mongoose.Types.ObjectId.isValid(user_id)) {
         return SendError404(res, EMessage.NotFound + " user_id");
       }
-      const user = await Models.User.findById({ _id: user_id });
+      const user = await Models.User.findById({ _id: user_id }).select(
+        "-password"
+      );
       return SendSuccess(res, SMessage.GetOne, user);
     } catch (error) {
       console.log(error);
@@ -89,7 +130,7 @@ export default class UserController {
       if (!user) {
         return SendError400(res, EMessage.Faild, user);
       }
-      const jwt = await GenerateToken(user);
+      const jwt = await GenerateToken(user._id);
       const newData = await Models.User.findById(user._id).select("-password");
 
       const data = Object.assign(
