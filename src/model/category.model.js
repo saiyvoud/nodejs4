@@ -5,10 +5,7 @@ const categorySchema = mongoose.Schema({
     type: String,
     require: true,
   },
-  image: {
-    type: String,
-    default: "",
-  },
+ 
 },{timestamps: true});
 
 const Category = mongoose.model("category", categorySchema);

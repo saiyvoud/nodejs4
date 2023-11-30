@@ -15,7 +15,6 @@ import mongoose from "mongoose";
 
 import UploadImageToCloud from "../config/cloudinary.js";
 export default class UserController {
-
   static async updateProfile(req, res) {
     try {
       const user_id = req.user;
@@ -31,12 +30,12 @@ export default class UserController {
       if (!profile) {
         return SendError400(res, "Profile is required!");
       }
-      
-      const image_url = await UploadImageToCloud(profile.data,profile.name)
-      if(!image_url){
-        return SendError404(res,"Faild Upload Image")
+
+      const image_url = await UploadImageToCloud(profile.data, profile.name);
+      if (!image_url) {
+        return SendError404(res, "Faild Upload Image");
       }
-     // const image_url = await UploadImageToServer(profile.name, profile.data);
+      // const image_url = await UploadImageToServer(profile.name, profile.data);
       const user = await Models.User.findByIdAndUpdate(
         user_id,
         {
@@ -105,19 +104,25 @@ export default class UserController {
   }
   static async register(req, res) {
     try {
-      const { username, email, phone, password, profile } = req.body;
+      const { username, email, phone, password } = req.body;
+
+      const profile = req.files.profile;
+      if (profile === undefined) {
+        return SendError400(res, "Profile is required!");
+      }
       const validate = ValidateData({
         username,
         email,
         phone,
-        password,
-        profile,
+        password
       });
-
       if (validate.length > 0) {
         return SendError400(res, EMessage.PleaseInput + validate.join(","));
       }
-
+      const profile_url = await UploadImageToCloud(profile.data, profile.name);
+      if (!profile_url) {
+        return SendError404(res, "Not Found");
+      }
       const genPassword = crypto.AES.encrypt(password, SCREATE_KEY);
 
       const user = await Models.User.create({
@@ -125,7 +130,7 @@ export default class UserController {
         email,
         phone,
         password: genPassword,
-        profile,
+        profile: profile_url,
       });
       if (!user) {
         return SendError400(res, EMessage.Faild, user);

@@ -5,6 +5,7 @@ export const SMessage = {
   GetOne: "GetOne Success",
   GetAll: "GetAll Success",
   Update: "Update Success",
+  Delete: "Delete Success",
 };
 export const EMessage = {
   // error message
@@ -14,4 +15,11 @@ export const EMessage = {
   NotFound: "Not Found",
   FalidPassword: "Faild Password",
   unauthorizaton: "unauthorizaton",
+};
+
+export const StatusOrder = {
+  await: "await",
+  padding: "padding",
+  success: "success",
+  cancel: "cancel",
 };

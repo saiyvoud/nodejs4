@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { StatusOrder } from "../service/message.js";
 
 const orderSchema = mongoose.Schema(
   {
@@ -41,9 +42,15 @@ const orderSchema = mongoose.Schema(
       },
     ],
     address: {
-      village: String,
-      district: String,
-      province: String,
+      village: {
+        type: String,
+      },
+      district: {
+        type: String,
+      },
+      province: {
+        type: String,
+      },
     },
     customerName: {
       type: String,
@@ -56,6 +63,11 @@ const orderSchema = mongoose.Schema(
     totalPrice: {
       type: Number,
       require: true,
+    },
+    status: {
+      type: String,
+      enum: Object.values(StatusOrder),
+      default: StatusOrder.await,
     },
     bill: {
       type: String,
